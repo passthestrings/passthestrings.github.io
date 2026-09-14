@@ -120,17 +120,17 @@ const SITE = {
 const LISTINGS = [
 
   {
-    id:"S001", sample:true,
+    id:"S001",
     status:"open",
     strings:["E","A"],
     size:"3/4",
     maker:"Thomastik-Infeld", product:"Spirocore Weich",
-    usedMonths:6,
+    usedMonths:12,
     country:"JP", region:"東京都",
     priority:true,
-    listed:"2026-10-14",
+    listed:"2026-09-14",
     photos:[],
-    note:"オーケストラで半年張っていました。ジャズ用に張り替えたので外しましたが、まだ十分鳴ります。学生さんに使ってもらえたらうれしいです。"
+    note:"主にジャズ、ラテンで使っていました。そろそろ新しく張り替える予定なのでお譲りします。学生さんに使ってもらえたらうれしいです。"
   },
 
   {
@@ -173,7 +173,7 @@ const T = {
     noPhoto:"写真待ち", unknown:"銘柄不明",
     spec:{ strings:"弦", used:"張っていた期間", maker:"メーカー", product:"商品名", size:"楽器サイズ", where:"地域", listed:"掲載日" },
     nStrings:n => `${n}本`,
-    months:m => m === 0 ? "未使用（開封のみ）" : m < 12 ? `${m}か月` : `${Math.floor(m/12)}年` + (m % 12 ? `${m % 12}か月` : ""),
+    months:m => m === 0 ? "未使用（開封のみ）" : m <= 12 ? `${m}か月` : `${Math.floor(m/12)}年` + (m % 12 ? `${m % 12}か月` : ""),
     want:"この弦がほしい", wantOff:"申し込みフォーム（準備中）", givenBtn:"譲渡済み",
     thanksH:"ありがとう", thanksCount:n => `${n} 通`,
     thanksNone:"まだありません。最初の「ありがとう」を待っています。",
@@ -224,7 +224,7 @@ const T = {
     noPhoto:"Photo coming", unknown:"Brand unknown",
     spec:{ strings:"Strings", used:"Used for", maker:"Maker", product:"Model", size:"Bass size", where:"Location", listed:"Listed" },
     nStrings:n => `${n} string${n > 1 ? "s" : ""}`,
-    months:m => m === 0 ? "Unused (opened only)" : m < 12 ? `${m} month${m > 1 ? "s" : ""}` : `${Math.floor(m/12)} yr` + (m % 12 ? ` ${m % 12} mo` : ""),
+    months:m => m === 0 ? "Unused (opened only)" : m <= 12 ? `${m} month${m > 1 ? "s" : ""}` : `${Math.floor(m/12)} yr` + (m % 12 ? ` ${m % 12} mo` : ""),
     want:"I'd like these", wantOff:"Request form (coming soon)", givenBtn:"Given",
     thanksH:"Thank-yous", thanksCount:n => `${n}`,
     thanksNone:"None yet. We're waiting for the first thank-you.",
