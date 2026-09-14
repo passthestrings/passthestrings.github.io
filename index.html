@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>弦のバトン / Pass the Strings</title>
+<meta name="description" content="使い終わったコントラバスの弦を、欲しい人に無償で譲るための掲示板。弦は0円、送料だけ受け取る人の負担です。">
+<meta property="og:title" content="弦のバトン / Pass the Strings">
+<meta property="og:description" content="まだ鳴るコントラバスの弦を、次の奏者へ。無償で譲るための掲示板。 / Used double bass strings, passed on for free.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://passthestrings.github.io/">
+
+<style>
+:root{
+  --body:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP","Helvetica Neue",sans-serif;
+  --serif:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",Georgia,serif;
+  --paper:#F6F4EF; --card:#FFFFFF; --ink:#1A1815;
+  --muted:#7E786E; --line:#E2DDD3; --accent:#2E5E5A; --accent-soft:#E6EFED;
+  --sample:#B08900; --given:#A39B8F;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.75;letter-spacing:.01em}
+.wrap{max-width:660px;margin:0 auto;padding:0 20px 80px}
+a{color:var(--accent)}
+
+/* 言語切り替え。世界向けなので最初から置く */
+.top{display:flex;justify-content:flex-end;padding-top:16px}
+.lang{font:inherit;font-size:13px;color:var(--accent);background:none;border:1px solid var(--line);
+  border-radius:999px;padding:4px 14px;cursor:pointer}
+
+header{padding:clamp(36px,9vw,72px) 0 0;text-align:center}
+header h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,6.6vw,38px);letter-spacing:.05em;line-height:1.35}
+header .sub{margin-top:12px;font-size:14px;color:var(--muted);letter-spacing:.04em}
+header .lead{margin:24px auto 0;max-width:31em;font-size:14px;color:var(--muted);text-align:left;line-height:1.9}
+
+h2{font-family:var(--serif);font-weight:600;font-size:15px;letter-spacing:.18em;color:var(--muted);
+  margin:56px 0 16px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+.count{float:right;font-family:var(--body);font-size:12px;letter-spacing:.06em}
+
+/* 1件分のカード */
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;scroll-margin-top:20px}
+.item + .item{margin-top:20px}
+.item.given{opacity:.62}
+
+.shots{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:#EDEAE3}
+.shots::-webkit-scrollbar{display:none}
+.shots figure{flex:0 0 100%;scroll-snap-align:center}
+.shots img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain;background:#EDEAE3}
+.dots{display:flex;justify-content:center;gap:6px;padding:9px 0 0}
+.dots i{width:5px;height:5px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.empty{height:88px;display:flex;align-items:center;justify-content:center;background:#EDEAE3;
+  border-bottom:1px solid var(--line);color:var(--muted);font-size:13px;letter-spacing:.08em}
+
+.body{padding:22px}
+.badges{display:flex;flex-wrap:wrap;gap:6px}
+.badge{display:inline-block;font-size:11px;letter-spacing:.1em;padding:3px 9px;border-radius:3px;border:1px solid var(--line);color:var(--muted)}
+.badge.open{border-color:var(--accent);color:var(--accent)}
+.badge.prio{background:var(--accent-soft);border-color:var(--accent-soft);color:var(--accent)}
+.badge.given{border-color:var(--given);color:var(--given)}
+.badge.sample{border-color:var(--sample);color:var(--sample)}
+.item h3{margin-top:11px;font-family:var(--serif);font-weight:600;font-size:21px;line-height:1.4}
+.item .meta{margin-top:4px;font-size:13px;color:var(--muted)}
+.note{margin-top:16px;font-size:15px;line-height:1.85;white-space:pre-line}
+.spec{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+  display:grid;grid-template-columns:7.5em 1fr;gap:6px 16px;font-size:13.5px}
+.spec dt{color:var(--muted)}
+
+.btn{display:block;margin-top:20px;padding:14px;text-align:center;background:var(--accent);
+  color:#fff;text-decoration:none;border-radius:6px;font-size:15px;letter-spacing:.04em}
+.btn.off{background:#CFC8BC;pointer-events:none}
+.btn.ghost{background:none;color:var(--accent);border:1px solid var(--accent)}
+
+/* ありがとう。サイトに溜まっていく部分 */
+.thanks{display:grid;gap:16px}
+.thank{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.thank img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#EDEAE3}
+.thank .body{padding:18px 20px}
+.thank .say{font-size:15px;line-height:1.85;white-space:pre-line}
+.thank .from{margin-top:10px;font-size:12.5px;color:var(--muted)}
+.none{font-size:14px;color:var(--muted);text-align:center;padding:10px 0 4px}
+.zukan{margin-top:16px;font-size:13.5px;color:var(--muted);text-align:center}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:24px}
+.card p{font-size:14px;line-height:1.9}
+.card ul,.card ol{margin:12px 0 0;padding-left:1.25em;font-size:14px;line-height:1.9}
+.card li + li{margin-top:6px}
+.card .fields{color:var(--muted);font-size:13.5px}
+
+footer{margin-top:40px;font-size:12px;color:var(--muted);line-height:1.9;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<noscript><p style="padding:40px;text-align:center">このページの表示には JavaScript が必要です。 / This page needs JavaScript.</p></noscript>
+
+<script>
+/* ============================================================
+   サイトの設定。名前とフォームのURLが決まったらここを書き換える
+   ============================================================ */
+const SITE = {
+  name:{ ja:"弦のバトン", en:"Pass the Strings" },
+  forms:{
+    // 掲載フォーム（Googleフォーム）
+    give:"https://docs.google.com/forms/d/e/1FAIpQLSesZXAzassr4uAdZufVByLK9W2IAAdF0YzPUpOeLudURzaFmg/viewform",
+    // 申込みフォーム。末尾に掲載IDが付いて、「掲載ID」の欄に入った状態で開く
+    want:"https://docs.google.com/forms/d/e/1FAIpQLSeOc-vODzGhYj_1UAbCjLi_4ptN6qaCWuUUyTS1EVNq048rOg/viewform?usp=pp_url&entry.1731267941=",
+    // ありがとうフォーム
+    thanks:"https://docs.google.com/forms/d/e/1FAIpQLScYguVRf70tXpLAQH08q3_HB1XkHEbwF3R4o44fDXWkb9aZzg/viewform"
+  },
+  support:"",    // 支援金の受け口。空のあいだはセクションごと出さない
+  zukan:"https://bassdex.github.io/"
+};
+
+/* ============================================================
+   ここから下だけ編集する。1件＝1オブジェクト。
+   使わない項目は行ごと省いてよい（空欄は表に出ない）。
+   ============================================================ */
+const LISTINGS = [
+
+  {
+    id:"S001", sample:true,
+    status:"open",
+    strings:["E","A"],
+    size:"3/4",
+    maker:"Thomastik-Infeld", product:"Spirocore Weich",
+    usedMonths:6,
+    country:"JP", region:"東京都",
+    priority:true,
+    listed:"2026-10-14",
+    photos:[],
+    note:"オーケストラで半年張っていました。ジャズ用に張り替えたので外しましたが、まだ十分鳴ります。学生さんに使ってもらえたらうれしいです。"
+  },
+
+  {
+    id:"S002", sample:true,
+    status:"given",
+    strings:["G","D","A","E"],
+    size:"4/4",
+    maker:"Pirastro", product:"Evah Pirazzi Weich",
+    usedMonths:1,
+    country:"DE", region:"Berlin",
+    listed:"2026-10-16",
+    photos:[],
+    note:"Tried them for a month — too warm for my bass. Almost like new."
+  },
+
+];
+
+const THANKS = [
+
+  {
+    listing:"S002", sample:true,
+    from:"Student, 17", country:"DE",
+    photo:"",
+    note:"My school bass had the same strings for years. It sings again. Thank you!",
+    date:"2026-10-28"
+  },
+
+];
+
+/* ============================================================
+   ここから下は触らなくてよい
+   ============================================================ */
+const T = {
+  ja:{
+    langBtn:"English",
+    tagline:"まだ鳴る弦を、次の奏者へ。",
+    lead:"張り替えて外したコントラバスの弦を、欲しい人に無償で譲るための掲示板です。弦は0円、送料だけ受け取る人の負担（着払い）。試してみたい人、学校の部活、弦が高くて手が出ない若い奏者へ。",
+    listH:"いま譲れる弦", openCount:n => `募集中 ${n} 件`,
+    open:"募集中", given:"譲渡済み", sample:"見本", prio:"学生・学校を優先",
+    noPhoto:"写真待ち", unknown:"銘柄不明",
+    spec:{ strings:"弦", used:"張っていた期間", maker:"メーカー", product:"商品名", size:"楽器サイズ", where:"地域", listed:"掲載日" },
+    nStrings:n => `${n}本`,
+    months:m => m === 0 ? "未使用（開封のみ）" : m < 12 ? `${m}か月` : `${Math.floor(m/12)}年` + (m % 12 ? `${m % 12}か月` : ""),
+    want:"この弦がほしい", wantOff:"申し込みフォーム（準備中）", givenBtn:"譲渡済み",
+    thanksH:"ありがとう", thanksCount:n => `${n} 通`,
+    thanksNone:"まだありません。最初の「ありがとう」を待っています。",
+    thanksBtn:"ありがとうを送る", thanksOff:"ありがとうの投稿（準備中）",
+    thanksFor:"受け取った弦",
+    zukan:"受け取った弦を張った楽器を、コントラバス図鑑に載せませんか。",
+    zukanLink:"コントラバス図鑑へ",
+    howH:"しくみ",
+    steps:[
+      "譲る人が、写真と弦の情報を掲載します。",
+      "欲しい人が「この弦がほしい」から申し込みます。学生・学校関係かどうかも添えてください。",
+      "運営が申し込みを譲る人に取り次ぎ、譲る人が1人を選んで直接連絡します。連絡先は、選ばれた相手にだけ伝わります。",
+      "着払いで送って、届いたら譲渡成立です。受け取った人は、よければ写真つきで「ありがとう」を。"
+    ],
+    rulesH:"約束ごと",
+    rules:[
+      "弦は0円です。送料は受け取る人が払います（着払い）。",
+      "やりとりは当人どうしで行います。ノークレーム・ノーリターンでお願いします。",
+      "「学生・学校を優先」の弦は、20歳までの人と学校関係の人を優先して、譲る人が選びます。確認は自己申告です。",
+      "運営は掲載と取り次ぎまでを行います。売買やお金のやりとりはできません。",
+      "写真は自分で撮ったものだけにしてください。"
+    ],
+    giveH:"弦を譲る",
+    giveLead:"張り替えて外した弦、試して合わなかった弦、楽器を手放して余った弦。まだ鳴るなら、次の奏者に回しませんか。1本からでも掲載できます。",
+    giveFieldsLabel:"掲載に使う項目",
+    giveFields:[
+      "写真1枚以上（弦全体が写るもの）",
+      "どの弦か（G・D・A・E・H/C）と本数",
+      "張っていた期間",
+      "メーカー・商品名（分かれば）",
+      "楽器のサイズ（4/4・3/4など）",
+      "国と地域（送料の目安になります）",
+      "ひとこと（外した理由など）",
+      "学生・学校を優先するかどうか"
+    ],
+    giveBtn:"譲る弦を掲載する", giveOff:"掲載フォーム（準備中）",
+    supportH:"運営を支える",
+    supportLead:"このサイトは無料で運営しています。続けるための支援を受け付けています。",
+    supportBtn:"支援する",
+    foot:"弦のやりとりは利用者どうしで行います。<br>掲載の取り下げはいつでも受け付けます。"
+  },
+  en:{
+    langBtn:"日本語",
+    tagline:"Strings with music left in them, passed on to the next player.",
+    lead:"A board for giving away used double bass strings, free. The strings cost nothing; the person receiving them pays the postage. For players who want to try something new, school ensembles, and young bassists who can't afford a new set.",
+    listH:"Strings available", openCount:n => `${n} open`,
+    open:"Open", given:"Given", sample:"Sample", prio:"Students & schools first",
+    noPhoto:"Photo coming", unknown:"Brand unknown",
+    spec:{ strings:"Strings", used:"Used for", maker:"Maker", product:"Model", size:"Bass size", where:"Location", listed:"Listed" },
+    nStrings:n => `${n} string${n > 1 ? "s" : ""}`,
+    months:m => m === 0 ? "Unused (opened only)" : m < 12 ? `${m} month${m > 1 ? "s" : ""}` : `${Math.floor(m/12)} yr` + (m % 12 ? ` ${m % 12} mo` : ""),
+    want:"I'd like these", wantOff:"Request form (coming soon)", givenBtn:"Given",
+    thanksH:"Thank-yous", thanksCount:n => `${n}`,
+    thanksNone:"None yet. We're waiting for the first thank-you.",
+    thanksBtn:"Send a thank-you", thanksOff:"Thank-you form (coming soon)",
+    thanksFor:"Received",
+    zukan:"Put the bass wearing your new strings in the Double Bass Gallery.",
+    zukanLink:"Visit the gallery",
+    howH:"How it works",
+    steps:[
+      "The giver lists the strings with a photo and a few details.",
+      "Anyone who wants them sends a request. Please mention if you're a student or with a school.",
+      "We pass the requests on. The giver picks one person and contacts them directly. Contact details go only to the person chosen.",
+      "The strings ship with postage paid on delivery. Once they arrive, that's it. If you like, send a thank-you with a photo."
+    ],
+    rulesH:"House rules",
+    rules:[
+      "Strings are free. The receiver pays the postage.",
+      "The exchange is between the two of you. No claims, no returns.",
+      "For listings marked \"Students & schools first\", the giver gives priority to people up to age 20 and to school ensembles. It's self-declared.",
+      "We only publish listings and pass on requests. No selling, no payments.",
+      "Photos must be your own."
+    ],
+    giveH:"Give strings",
+    giveLead:"Strings you took off at a change, a set you tried and didn't like, spares from a bass you sold. If they still sound, pass them on. Even a single string is welcome.",
+    giveFieldsLabel:"What we ask for",
+    giveFields:[
+      "At least one photo showing the strings",
+      "Which strings (G, D, A, E, B/C) and how many",
+      "How long they were on a bass",
+      "Maker and model, if you know",
+      "Bass size (4/4, 3/4, ...)",
+      "Country and area (so the receiver can estimate postage)",
+      "A short note (why you took them off, etc.)",
+      "Whether students and schools get priority"
+    ],
+    giveBtn:"List your strings", giveOff:"Listing form (coming soon)",
+    supportH:"Support",
+    supportLead:"This site is run for free. Support helps keep it going.",
+    supportBtn:"Support the site",
+    foot:"Exchanges happen directly between users.<br>Listings can be taken down at any time."
+  }
+};
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* 言語：URLの ?lang= ＞ 前回の選択 ＞ ブラウザの言語 */
+function pickLang(){
+  const q = new URLSearchParams(location.search).get("lang");
+  if (q === "ja" || q === "en") return q;
+  try { const s = localStorage.getItem("lang"); if (s === "ja" || s === "en") return s; } catch(e) {}
+  return (navigator.language || "").toLowerCase().startsWith("ja") ? "ja" : "en";
+}
+let lang = pickLang();
+
+/* 国名は閲覧者の言語で出す（JP → 日本 / Japan） */
+function countryName(code){
+  if (!code) return "";
+  try { return new Intl.DisplayNames([lang], { type:"region" }).of(code) || code; } catch(e) { return code; }
+}
+
+function shots(photos, alt){
+  if (!photos || !photos.length) return `<div class="empty">${esc(T[lang].noPhoto)}</div>`;
+  return `<div class="shots">` +
+    photos.map(p => `<figure><img src="${esc(p)}" alt="${esc(alt)}" loading="lazy"></figure>`).join("") +
+    `</div>` + (photos.length > 1
+      ? `<div class="dots">` + photos.map((_, j) => `<i class="${j ? "" : "on"}"></i>`).join("") + `</div>`
+      : "");
+}
+
+function titleOf(l){ return l.product || l.maker || T[lang].unknown; }
+
+function listingCard(l){
+  const t = T[lang];
+  const given = l.status === "given";
+  const where = [countryName(l.country), l.region].filter(Boolean).join(" / ");
+  const strs = (l.strings || []).join(lang === "ja" ? "・" : ", ");
+  const badges = [
+    l.sample ? `<span class="badge sample">${t.sample}</span>` : "",
+    `<span class="badge ${given ? "given" : "open"}">${given ? t.given : t.open}</span>`,
+    l.priority && !given ? `<span class="badge prio">${t.prio}</span>` : ""
+  ].join("");
+  const rows = [
+    [t.spec.strings, strs ? (lang === "ja" ? `${strs}（${t.nStrings(l.strings.length)}）` : `${strs} (${t.nStrings(l.strings.length)})`) : ""],
+    [t.spec.used, l.usedMonths != null ? t.months(l.usedMonths) : ""],
+    [t.spec.maker, l.maker], [t.spec.product, l.product],
+    [t.spec.size, l.size], [t.spec.where, where], [t.spec.listed, l.listed]
+  ].filter(([, v]) => v).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+
+  const url = SITE.forms.want ? SITE.forms.want + encodeURIComponent(l.id) : "";
+  const btn = given
+    ? `<span class="btn off">${t.givenBtn}</span>`
+    : url ? `<a class="btn" href="${esc(url)}" target="_blank" rel="noopener">${t.want}</a>`
+          : `<span class="btn off">${t.wantOff}</span>`;
+
+  return `<article class="item ${given ? "given" : ""}" id="${esc(l.id)}">
+    ${shots(l.photos, titleOf(l))}
+    <div class="body">
+      <div class="badges">${badges}</div>
+      <h3>${esc(titleOf(l))}</h3>
+      <div class="meta">${esc([strs, l.size, where].filter(Boolean).join(lang === "ja" ? "｜" : " · "))}</div>
+      ${l.note ? `<p class="note">${esc(l.note)}</p>` : ""}
+      ${rows ? `<dl class="spec">${rows}</dl>` : ""}
+      ${btn}
+    </div>
+  </article>`;
+}
+
+function thankCard(th){
+  const t = T[lang];
+  const l = LISTINGS.find(x => x.id === th.listing);
+  const got = l ? `${t.thanksFor}${lang === "ja" ? "：" : ": "}<a href="#${esc(l.id)}">${esc(titleOf(l))}${lang === "ja" ? "（" : " ("}${esc((l.strings || []).join(lang === "ja" ? "・" : ", "))}${lang === "ja" ? "）" : ")"}</a>` : "";
+  const who = [th.from, countryName(th.country), th.date].filter(Boolean).map(esc).join(" · ");
+  return `<div class="thank">
+    ${th.photo ? `<img src="${esc(th.photo)}" alt="" loading="lazy">` : ""}
+    <div class="body">
+      ${th.sample ? `<div class="badges" style="margin-bottom:10px"><span class="badge sample">${t.sample}</span></div>` : ""}
+      <p class="say">${esc(th.note || "")}</p>
+      <div class="from">${who}${got ? "<br>" + got : ""}</div>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.title = SITE.name[lang];
+
+  const sorted = [...LISTINGS].sort((a, b) => (a.status === "given") - (b.status === "given"));
+  const openN = LISTINGS.filter(l => l.status !== "given").length;
+
+  const giveBtn = SITE.forms.give
+    ? `<a class="btn" href="${esc(SITE.forms.give)}" target="_blank" rel="noopener">${t.giveBtn}</a>`
+    : `<span class="btn off">${t.giveOff}</span>`;
+  const thanksBtn = SITE.forms.thanks
+    ? `<a class="btn ghost" href="${esc(SITE.forms.thanks)}" target="_blank" rel="noopener">${t.thanksBtn}</a>`
+    : `<span class="btn off">${t.thanksOff}</span>`;
+
+  document.getElementById("app").innerHTML = `
+    <div class="top"><button class="lang" id="lang" type="button">${t.langBtn}</button></div>
+    <header>
+      <h1>${esc(SITE.name[lang])}</h1>
+      <div class="sub">${esc(t.tagline)}</div>
+      <p class="lead">${esc(t.lead)}</p>
+    </header>
+
+    <h2>${t.listH}<span class="count">${t.openCount(openN)}</span></h2>
+    <div id="list">${sorted.map(listingCard).join("")}</div>
+
+    <h2>${t.thanksH}<span class="count">${THANKS.length ? t.thanksCount(THANKS.length) : ""}</span></h2>
+    <div class="thanks">${THANKS.length ? THANKS.map(thankCard).join("") : `<p class="none">${t.thanksNone}</p>`}</div>
+    ${thanksBtn}
+    <p class="zukan">${t.zukan}<br><a href="${esc(SITE.zukan)}" target="_blank" rel="noopener">${t.zukanLink}</a></p>
+
+    <h2>${t.howH}</h2>
+    <div class="card"><ol>${t.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div>
+
+    <h2>${t.rulesH}</h2>
+    <div class="card"><ul>${t.rules.map(s => `<li>${esc(s)}</li>`).join("")}</ul></div>
+
+    <h2>${t.giveH}</h2>
+    <div class="card">
+      <p>${esc(t.giveLead)}</p>
+      <p style="margin-top:14px;font-size:13px;color:var(--muted)">${t.giveFieldsLabel}</p>
+      <ul class="fields">${t.giveFields.map(s => `<li>${esc(s)}</li>`).join("")}</ul>
+      ${giveBtn}
+    </div>
+
+    ${SITE.support ? `
+    <h2>${t.supportH}</h2>
+    <div class="card"><p>${esc(t.supportLead)}</p>
+      <a class="btn ghost" href="${esc(SITE.support)}" target="_blank" rel="noopener">${t.supportBtn}</a></div>` : ""}
+
+    <footer>${t.foot}</footer>
+  `;
+
+  document.getElementById("lang").onclick = () => {
+    lang = lang === "ja" ? "en" : "ja";
+    try { localStorage.setItem("lang", lang); } catch(e) {}
+    render();
+  };
+
+  /* 何枚目を見ているかを点に反映する */
+  document.querySelectorAll(".shots").forEach(el => {
+    const dots = el.nextElementSibling;
+    if (!dots || !dots.classList.contains("dots")) return;
+    el.addEventListener("scroll", () => {
+      const i = Math.round(el.scrollLeft / el.clientWidth);
+      [...dots.children].forEach((d, j) => d.classList.toggle("on", j === i));
+    }, { passive:true });
+  });
+}
+
+render();
+</script>
+</body>
+</html>
